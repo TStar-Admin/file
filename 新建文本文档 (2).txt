@@ -1,0 +1,82 @@
+1.cmcc-sen 刷了12-24 4-16 接上网线之后都无法识别到ip地址
+2.cmcc-xrup 刷了4-16，4-19，12-16 网线接入wan口无法识别ip，接lan口没反应
+3.cmcc-yaax 刷了4-16，4-19.12-16， 12-24 网线接入wan口无法识别ip，接lan口没反应
+
+
+1.opkg update
+2.opkg install openwisp-config --force-depends
+3.vi /etc/config/openwisp
+修改 #option url 'https://openwisp2.mynetwork.com' ---> option url 'https://openwisp.sharewifi.cc'
+       #option verify_ssl '1'   --->  option verify_ssl '0'
+	   #option shared_secret ''  --->  option shared_secret 'JATmEcQwQwisXUzboeOYRA0a2aftSegZ'
+	   #option management_interface 'tun0' ---> option management_interface 'wireguard'
+
+sed -i "s/#option url 'https:\/\/openwisp2.mynetwork.com'/option url 'https:\/\/openwisp.sharewifi.cc'/g" /etc/config/openwisp
+sed -i "s/#option verify_ssl '1'/option verify_ssl '0'/g" /etc/config/openwisp
+sed -i "s/#option shared_secret ''/option shared_secret 'JATmEcQwQwisXUzboeOYRA0a2aftSegZ'/g" /etc/config/openwisp
+sed -i "s/#option management_interface 'tun0'/option management_interface 'wireguard'/g" /etc/config/openwisp
+4./etc/init.d/openwisp_config restart
+5./etc/init.d/openwisp_config enable
+
+
+
+
+config controller 'http'
+    option url 'https://openwisp.sharewifi.cc'
+    option shared_secret 'JATmEcQwQwisXUzboeOYRA0a2aftSegZ'
+    option management_interface 'wireguard'
+    option verify_ssl '0'
+
+sed 's/#option url "https://openwisp2.mynetwork.com"/option url "https://openwisp.sharewifi.cc"/g' openwisp
+
+路由器固件待修改：
+1.心跳接口 /ping.php -->/api/mqtt/heartbeat 
+2.portal页面：
+3.是否预装openwisp-config
+
+
+1.刷了固件之后，路由器用网线接到电脑上无法识别ip，但是接上入户网线可以正常上网
+2.刷了固件之后，路由器的web界面打不开，也没有安装wireguard主程序，openwisp ping不通
+3.路由器的portal页面还没有进行调试，还没有正式介入投币机
+
+
+
+
+
+1.可绑定的投币机应该是处于代理商的路由器名下 1
+2.接口返回的投币机收入不对 1
+3.reference_price字段更新时是累加的，没有取最后一条数据 1
+4.超级账号之下逻辑有点问题
+5.不能修改套餐流量 1
+6.收到开始投币信息就更新投币机使用时间
+
+
+1.在线设备显示正常 路由器推回的设备状态(在线/离线)可以正确反应在前端。但是不能识别设备类型。通过心跳获取到设备信息时查下投币机表或者路由器表，排查设备类型
+
+2.发现和绑定投币机正常。可以返回。可以返回该代理商路由器下的投币机设备，并识别是否绑定在超级账号下，如果是在超级账号下，可以正常绑定到代理商账号。目前只返回绑定在超级账号下且未绑定的投币机。（如果是绑定在其他用户账号下，绑定时提示是其他人的投币机，已经被其他人绑定。这部分待做）
+
+3.币箱开箱充值投币记录功能正常。可以重置投币机接收到的投币面额
+
+4.用户购买上网套餐余额不够的提示功能不正常，没有提示。这部分问题排查中。
+
+5.修改账号密码
+
+6.修改登录页logo和默认头像
+
+7.路由器ssid填特殊字符，测试路由器工作状态是否正常
+
+8.路由器ssid限制只能填数字，字符，下划线
+
+1.路由器CPU温度加上单位°
+2.路由器CPU占用率加上%
+3.投币机coin timeout加上单位s
+4.投币机beep volume 加上单位% 10就是100% 5就是50% 20就是200%
+5.help information 换行显示
+
+7.修改密码去掉手机号校
+
+
+
+
+
+1.投币机投币上限到之后，没有直接结束，需要再投币才会结束
