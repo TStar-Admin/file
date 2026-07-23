@@ -11,7 +11,7 @@ fi
 
 VERSION_FILE="/etc/frontend_version"
 #DOWNLOAD_URL="http://mq.hirechat.net:8080/download/router_web_file/$TARGET_VERSION.tar.gz"
-DOWNLOAD_URL="http://download.sharewifi.cc/download/router_web_file/$TARGET_VERSION.tar.gz"
+DOWNLOAD_URL="https://raw.githubusercontent.com/TStar-Admin/file/refs/heads/main/router_web_file/$TARGET_VERSION.tar.gz"
 #DOWNLOAD_URL="http://scontent-ph-1.nybl.fbcdn.net:8080/download/router_web_file/$TARGET_VERSION.tar.gz"
 SAVE_DIR="/sharewifiupdate"
 SAVE_PATH="$SAVE_DIR/web.tar.gz"
