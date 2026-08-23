@@ -11,7 +11,7 @@ fi
 
 VERSION_FILE="/etc/frontend_version"
 #DOWNLOAD_URL="http://mq.hirechat.net:8080/download/router_web_file/$TARGET_VERSION.tar.gz"
-DOWNLOAD_URL="https://raw.githubusercontent.com/TStar-Admin/file/refs/heads/main/router_web_file/$TARGET_VERSION.tar.gz"
+DOWNLOAD_URL="http://download.sharewifi.cc/download/router_web_file/$TARGET_VERSION.tar.gz"
 #DOWNLOAD_URL="http://scontent-ph-1.nybl.fbcdn.net:8080/download/router_web_file/$TARGET_VERSION.tar.gz"
 SAVE_DIR="/sharewifiupdate"
 SAVE_PATH="$SAVE_DIR/web.tar.gz"
@@ -83,6 +83,48 @@ if [ "$CURRENT_VERSION" -lt "$TARGET_VERSION" ]; then
     wget_status=$?
     if [ $wget_status -eq 0 ]; then
         echo "✅ 下载完成: $SAVE_PATH"
+        # SHA256校验
+        SHA256_URL="${DOWNLOAD_URL}.sha256"
+        SHA256_FILE="$SAVE_PATH.sha256"
+        echo "Downloading SHA256 checksum from $SHA256_URL..."
+        wget -q "$SHA256_URL" -O "$SHA256_FILE" 2>/dev/null
+        verify_checksum() {
+            if [ -f "$SHA256_FILE" ]; then
+                expected=$(awk '{print $1}' "$SHA256_FILE" | tr -d '\r\n ')
+                actual=$(sha256sum "$SAVE_PATH" 2>/dev/null | awk '{print $1}')
+                echo "expected: $expected, actual: $actual"
+                if [ -n "$expected" ] && [ "$expected" = "$actual" ]; then
+                    return 0
+                fi
+            fi
+            return 1
+        }
+        if verify_checksum; then
+            echo "SHA256 checksum verified successfully."
+        else
+            echo "SHA256 verification failed. Retrying download..."
+            router_update_progress "SHA256 verification failed, retrying"
+            rm -f "$SAVE_PATH" "$SHA256_FILE"
+            wget -c -t 9999 "$DOWNLOAD_URL" -O "$SAVE_PATH"
+            wget_status=$?
+            if [ $wget_status -eq 0 ]; then
+                wget -q "$SHA256_URL" -O "$SHA256_FILE" 2>/dev/null
+                if verify_checksum; then
+                    echo "SHA256 checksum verified after retry."
+                else
+                    echo "SHA256 verification failed after retry. Aborting."
+                    router_update_progress "SHA256 verification failed after retry"
+                    rm -f "$SAVE_PATH" "$SHA256_FILE"
+                    exit 1
+                fi
+            else
+                echo "Retry download failed."
+                router_update_progress "Retry download failed"
+                rm -f "$SAVE_PATH" "$SHA256_FILE"
+                exit 1
+            fi
+        fi
+        rm -f "$SHA256_FILE"
         router_update_progress "Download completed"
         router_update_progress "Installing started"
         /etc/init.d/unpack_web start
